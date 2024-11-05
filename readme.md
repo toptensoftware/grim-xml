@@ -7,6 +7,7 @@ This is a terrible XML parser and you shouldn't use it:
 * No support for CDATA
 * No support for processing instructions
 * No support for namespaces
+* No unit tests
 * Spec, schmeck, we didn't bothering to read the spec.
 * The entire parser is 100 lines of code, pretty sure I forget something.
 
