@@ -8,7 +8,7 @@ This is a terrible XML parser and you shouldn't use it:
 * No support for processing instructions
 * No support for namespaces
 * No unit tests
-* Spec, schmeck, we didn't bothering to read the spec.
+* Spec, schmeck, we didn't bother to read the spec.
 * The entire parser is 100 lines of code, pretty sure I forget something.
 
 But, if your use case is simple and well known, grim-xml is small, easy to use 
@@ -137,7 +137,7 @@ let n = node(parse("<myxml> ... </myxml"));
 
 The value returned from `node()` is an object with the following methods and properties:
 
-* `node` - the origina node object passed to the `node()` function.
+* `node` - the original node object passed to the `node()` function.
 * `type` - the type of node (`"#element"`, `"#comment"` or `"#text"`)
 * `name` - the name of the element (`undefined` if not an element)
 * `data` - the text data of a comment or text node (`undefined` if not a comment or text)
