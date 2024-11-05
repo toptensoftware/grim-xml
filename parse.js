@@ -4,9 +4,10 @@ export function parse(xml, options)
     options = options ?? {};
     if (!options.decode)
         options.decode = x => x;
-    let elemStack = [ { children: [] } ];
+    let document = { type: "#document", children: [] };
+    let elemStack = [ document ];
     let t;
-    let rxTag = /(?:<!--(.*?)-->)|(?:<(\/?)([^\s]+)(.*?)(\/?))>/g;
+    let rxTag = /(?:<\?([^\s]+)(.*?)\?>)|(?:<!\[CDATA\[(.*?)\]\]>)|(?:<!--(.*?)-->)|(?:<(\/?)([^\s]+)(.*?)(\/?))>/g;
     let last = 0;
     while (t = rxTag.exec(xml))
     {
@@ -15,22 +16,35 @@ export function parse(xml, options)
 
         if (t[1])
         {
+            addChild({
+                type: "#pi",
+                name: t[1],
+                data: t[2],
+            });
+        }
+        else if (t[3])
+        {
+            addChild({
+                type: "#cdata",
+                data: t[3],
+            });
+        }
+        else if (t[4])
+        {
             if (options.preserveComments)
             {
-                if (!top.children)
-                    top.children = [];
-                top.children.push({
+                addChild({
                     type: "#comment",
-                    data: options.decode(t[1]),
-                })
+                    data: options.decode(t[4]),
+                });
             }
         }
         else
         {
-            let closing = t[2] == '/';
-            let name = t[3];
-            let attrs = t[4].trim();
-            let selfClosing = t[5] == '/';
+            let closing = t[5] == '/';
+            let name = t[6];
+            let attrs = t[7].trim();
+            let selfClosing = t[8] == '/';
 
             // Handle non-white space text data
             if (t.index > last)
@@ -40,9 +54,7 @@ export function parse(xml, options)
                     text = text.trim();
                 if (text.length > 0)
                 {
-                    if (!top.children)
-                        top.children = [];
-                    top.children.push({
+                    addChild({
                         type: "#text",
                         data: options.decode(text),
                     });
@@ -64,9 +76,7 @@ export function parse(xml, options)
                 // Create a new element
                 let elem = { type: "#element", name };
 
-                if (!top.children)
-                    top.children = [];
-                top.children.push(elem);
+                addChild(elem);
                 
                 // Add self to the stack of open element
                 if (!selfClosing)
@@ -87,8 +97,17 @@ export function parse(xml, options)
 
     if (elemStack.length > 1)
         throw new Error("invalid XML: unclosed tags");
-    if (elemStack[0].children.length != 1)
-        throw new Error("invalid XML: multiple root nodes");
+    let rootElements = document.children.filter(x => x.type == "#element");
+    if (rootElements.length != 1)
+        throw new Error("invalid XML: multiple root elements");
 
-    return elemStack[0].children[0];
+    return document;
+
+    function addChild(child)
+    {
+        let top = elemStack[elemStack.length-1];
+        if (!top.children)
+            top.children = [];
+        top.children.push(child);
+    }
 }

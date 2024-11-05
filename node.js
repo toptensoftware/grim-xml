@@ -16,6 +16,14 @@ class Node
         return this;
     }
 
+    get documentElement()
+    {
+        let nodes = this.#node.children.filter(x => x.type === "#element");
+        if (nodes.length != 1)
+            throw new Error("not exactly one document element");
+        return new Node(nodes[0]);
+    }
+
     // Find a single child node with specified name
     single(name)
     {

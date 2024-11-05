@@ -4,12 +4,11 @@ A grim, but handy, XML parser.
 
 This is a terrible XML parser and you shouldn't use it:
 
-* No support for CDATA
-* No support for processing instructions
 * No support for namespaces
+* No support for DTD's or parameter entity references
 * No unit tests
-* Spec, schmeck, we didn't bother to read the spec.
-* The entire parser is 100 lines of code, pretty sure I forget something.
+* Spec, schmeck, we didn't bother to read the spec
+* The entire parser is about 100 lines of code, pretty sure I forget something.
 
 But, if your use case is simple and well known, grim-xml is small, easy to use 
 and if you cross your fingers, hold your mouth right and it's not too windy outside,
@@ -41,10 +40,12 @@ Parse XML string
 ```js
 import { parse } from "@toptensoftware/grim-xml";
 
-let xml = `<fruits>
+let xml = `<?xml version="1.0" encoding="UTF-8" ?>
+<fruits>
     Text
     <element apples="red" pears="yellow"/>
     <!-- comment -->
+    <![CDATA[ some cdata data ]]>
     More Text
 </fruits>`
 
@@ -58,28 +59,42 @@ look like this:
 
 ```js
 {
-    "type": "#element",
-    "name": "root",
+    "type": "#document",
     "children": [
         {
-            "type": "#text",
-            "data": "Text"
+            "type": "#pi",
+            "name": "xml",
+            "data": " version=\"1.0\" encoding=\"UTF-8\" "
         },
         {
             "type": "#element",
-            "name": "element",
-            "attrs": {
-                "apples": "red",
-                "pears": "yellow"
-            }
-        },
-        {
-            "type": "#comment",
-            "data": " comment "
-        },
-        {
-            "type": "#text",
-            "data": "More Text"
+            "name": "fruits",
+            "children": [
+                {
+                    "type": "#text",
+                    "data": "Text"
+                },
+                {
+                    "type": "#element",
+                    "name": "element",
+                    "attrs": {
+                        "apples": "red",
+                        "pears": "yellow"
+                    }
+                },
+                {
+                    "type": "#comment",
+                    "data": " comment "
+                },
+                {
+                    "type": "#cdata",
+                    "data": " some cdata data "
+                },
+                {
+                    "type": "#text",
+                    "data": "More Text"
+                }
+            ]
         }
     ]
 }
@@ -138,10 +153,11 @@ let n = node(parse("<myxml> ... </myxml"));
 The value returned from `node()` is an object with the following methods and properties:
 
 * `node` - the original node object passed to the `node()` function.
-* `type` - the type of node (`"#element"`, `"#comment"` or `"#text"`)
-* `name` - the name of the element (`undefined` if not an element)
-* `data` - the text data of a comment or text node (`undefined` if not a comment or text)
-* `leaf()` - throws an exception if the node has children, otherwise returns itself
+* `type` - the type of node (`"#element"`, `"#comment"` or `"#text"`).
+* `name` - the name of the element (`undefined` if not an element).
+* `data` - the text data of a comment or text node (`undefined` if not a comment or text).
+* `documentElement` - the one and only child element of this node, otherwise throws.
+* `leaf()` - throws an exception if the node has children, otherwise returns itself.
 * `single(name)` - gets a single child element named `name` and returns it wrapped in a node.
 Throws if not exactly one match.  Doesn't throw if multiple children, but only a single match.
 * `multiple(name)` - gets all child elements with name `name`.  Returns array of zero or more.
@@ -169,6 +185,7 @@ let svgDom = parse(svg);
 
 // Get the root node and check it's of type "svg"
 let n = node(svgDom).named('svg');
+let n = node(js).documentElement.named('svg');
 
 // Get some expected attributes 
 console.log(`width: ${n.attr('width')} height: ${n.attr('height')}`);
