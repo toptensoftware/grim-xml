@@ -1,0 +1,22 @@
+{
+  "name": "@toptensoftware/grim-xml",
+  "version": "1.0.0",
+  "description": "A grim, but tiny, XML parser",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Topten Software",
+  "contributors": [
+    {
+      "name": "Brad Robinson",
+      "email": "contact@toptensoftware.com"
+    }
+  ],  
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/toptensoftware/grim-xml.git"
+  },
+  "license": "Apache-2.0"
+}
